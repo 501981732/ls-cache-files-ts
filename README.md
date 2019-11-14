@@ -1,3 +1,7 @@
+
+
+[jsdoc](https://501981732.github.io/ls-cache-files-ts/)
+
 ### LS CACHE
 
     利用浏览器缓存localStorage，缓存静态资源（目前支持css,js类型），第二次请求时，直接从本地文件中中读取资源，节约网络请求，优化性能。
