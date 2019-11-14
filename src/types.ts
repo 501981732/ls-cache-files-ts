@@ -11,12 +11,13 @@ export interface LSConfig {
 }
 // 类的公共属性 方法
 interface ILSCacheFiles {
-  __LS__MAP: LSConfig
+  __LS__MAP?: LSConfig
+  needFullUpdate?: boolean
   init: () => void
   loadAndCacheFile: (url: string, version: string | number) => void
   checkAndCacheFile: (url: string, version: string | number) => void
-  checkCanLocalStorage: boolean
-  needUpdate: (flag?: boolean) => void
+  checkCanLocalStorage: () => boolean
+  needUpdate: () => void
   checkUsedSpace: () => number | string
 }
 // // 混合接口

@@ -14,9 +14,14 @@ function testCanLocalStorage() {
 }
 function isType(type) {
     return function (obj) {
-        return Object.prototype.toString.call(obj) === "[object " + type + "]";
+        var t = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+        return Object.prototype.toString.call(obj) === "[object " + t + "]";
     };
 }
+/**
+ * useage
+ *  const flag = isType('Array')([])
+ */
 var isArray = isType('Array');
 function analysisFile(path) {
     if (path) {

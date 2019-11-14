@@ -2,20 +2,23 @@ import { LSConfig } from './types';
 import 'core-js/fn/promise';
 declare class LSCacheFiles {
     __LS__MAP: LSConfig;
+    needFullUpdate: boolean;
     constructor();
     /**
      * 检查是否需要更新 根据 配置文件来决定是否全量更新
-     * @param {boolean | null} flag
-     * @return booleanå
+     * @return boolean
      */
-    needUpdate(flag?: boolean): boolean;
+    needUpdate(): boolean;
     /**
      * 请求文件并缓存
      * @param {string} url
      * @param {number} version
      */
     loadFileAndCache(url: string, version: number): void;
-    init(): void;
+    init(options: {
+        configMap: LSConfig;
+        needFullUpdate: boolean;
+    }): void;
     /**
      *
      * 1.判断本地是否有存储该文件
@@ -24,7 +27,7 @@ declare class LSCacheFiles {
      * @param {string} url
      * @param {number} version
      */
-    checkFileAndCache(url: any, version: number): void;
+    checkFileAndCache(url: string, version: number): void;
     /**
      * 检查已经使用的localstorage容量
      * @return {number}

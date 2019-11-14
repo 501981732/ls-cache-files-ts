@@ -18,9 +18,14 @@
   }
   function isType(type) {
       return function (obj) {
-          return Object.prototype.toString.call(obj) === "[object " + type + "]";
+          var t = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+          return Object.prototype.toString.call(obj) === "[object " + t + "]";
       };
   }
+  /**
+   * useage
+   *  const flag = isType('Array')([])
+   */
   var isArray = isType('Array');
   function analysisFile(path) {
       if (path) {
@@ -1417,15 +1422,15 @@
   var LSCacheFiles = /** @class */ (function () {
       function LSCacheFiles() {
           this.__LS__MAP = window.__LS__MAP || {};
+          this.needFullUpdate = false;
       }
       /**
        * 检查是否需要更新 根据 配置文件来决定是否全量更新
-       * @param {boolean | null} flag
-       * @return booleanå
+       * @return boolean
        */
-      LSCacheFiles.prototype.needUpdate = function (flag) {
-          if (flag !== undefined) {
-              return flag;
+      LSCacheFiles.prototype.needUpdate = function () {
+          if (this.needFullUpdate) {
+              return true;
           }
           if (this.__LS__MAP.version) {
               return JSON.parse(localStorage.getItem('__LS__version')) !== this.__LS__MAP.version;
@@ -1451,15 +1456,17 @@
               // throw new Error(err)
           });
       };
-      LSCacheFiles.prototype.init = function () {
+      LSCacheFiles.prototype.init = function (options) {
           var _this = this;
           var list = this.__LS__MAP.list;
+          this.__LS__MAP = options.configMap || window.__LS__MAP || {};
+          this.needFullUpdate = options.needFullUpdate || false;
           if (list && helper.isArray(list)) {
               list.map(function (item) {
                   var prefixPath = helper.domUtils.PREFIX + item.url;
                   var LSValue = localStorage.getItem(prefixPath);
                   // 检查localstorage是否可用 不可用 ajax加载
-                  if (!helper.testCanLocalStorage) {
+                  if (!_this.checkCanLocalStorage()) {
                       console.error('sorry, you can not use this sdk!');
                       helper.domUtils.insertFile(item.url);
                   }

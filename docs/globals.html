@@ -940,6 +940,131 @@ img { max-width: 100%; }
 </nav>
 <div class="container container-main">
 	<div class="content-wrap">
+		<div class="tsd-panel tsd-typography">
+			<h3 id="ls-cache">LS CACHE</h3>
+			<pre><code>利用浏览器缓存localStorage，缓存静态资源（目前支持css,<span class="hljs-keyword">js</span>类型），第二次请求时，直接从本地文件中中读取资源，节约网络请求，优化性能。</code></pre><ol>
+				<li>首次加载的情况下 会动态加载js 并将内容存到localStorage。</li>
+				<li>非首次加载 会从localStorage中取出来插入到模板中。</li>
+				<li>有完整的缓存更新机制，可局部更新，或全量更新已存储的文件。</li>
+				<li>有良好的容错机制。</li>
+				<li>每次RD同步传一份资源的配置文件(或者FE自己维护)，FE根据配置文件和缓存中的文件进行版本标识。从而决定是利用缓存还是重新请求。</li>
+			</ol>
+			<h3 id="-">流程</h3>
+			<ol>
+				<li>根据配置文件进行初始化</li>
+				<li>判断localstorage是否可用</li>
+				<li>判断本地是否有存储目标文件 </li>
+				<li>根据版本判断是否需要全量更新，若不需要更新，则遍历读取本地文件，若某一文件为空，则重新请求在存储</li>
+				<li>判断遍历的目标文件版本是否相同 若不相同，则重新请求存储，否则使用缓存</li>
+			</ol>
+			<p><img src="https://pic1.58cdn.com.cn/nowater/cxnomark/n_v2cd68acbc04474e2ca23309e69c019c12.png" alt="image"></p>
+			<h2 id="useage">useage</h2>
+			<p><strong>模板中同步一份配置文件</strong></p>
+			<h3 id="v0-1-1-">v0.1.1配置文件</h3>
+			<pre><code>window.__LS__MAP = {
+    '<span class="hljs-attribute">js/vue.js'</span>: 'https://j1.58cdn<span class="hljs-variable">.com</span><span class="hljs-variable">.cn</span>/git/hrg-innovate/pc-super-employer-home/static/js/vue<span class="hljs-variable">.chunk_v</span>20190808162950<span class="hljs-variable">.js</span>'//资源地址
+}</code></pre><h3 id="v0-2-2-">v0.2.2配置文件</h3>
+			<pre><code>window.__LS__MAP = {
+    <span class="hljs-keyword">version</span>: <span class="hljs-number">1</span>,
+    lis<span class="hljs-variable">t:</span> [{
+        <span class="hljs-keyword">version</span>: <span class="hljs-number">1</span>,
+        ur<span class="hljs-variable">l:</span> <span class="hljs-string">'http://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css'</span>,//资源地址
+        //<span class="hljs-built_in">type</span>?: <span class="hljs-string">'css'</span>
+    },{
+        <span class="hljs-keyword">version</span>: <span class="hljs-number">1</span>,
+        ur<span class="hljs-variable">l:</span> <span class="hljs-string">'http://j1.58cdn.com.cn/global_app/js/lib/zepto.min.js'</span>,//资源地址
+        //<span class="hljs-built_in">type</span>?: <span class="hljs-string">'js'</span>
+    }]
+}</code></pre><h3 id="-">初始化</h3>
+			<ol>
+				<li>支持所有方式的加载</li>
+				<li>提供 <code>umd</code>  <code>es5</code>  <code>es6</code>三种打包结果</li>
+			</ol>
+			<pre><code>npm <span class="hljs-keyword">install</span> ls-<span class="hljs-keyword">cache</span>-files
+<span class="hljs-keyword">import</span> LSCacheFiles <span class="hljs-keyword">from</span> <span class="hljs-string">'ls-cache-files'</span>
+LSCacheFiles.init()</code></pre><pre><code>&lt;script src=<span class="hljs-string">'https://raw.githubusercontent.com/501981732/ls-cache-files/master/lib/index.min.js'</span>&gt;引入
+文件: <span class="hljs-symbol">https:</span>/<span class="hljs-regexp">/github.com/</span><span class="hljs-number">501981732</span>/ls-cache-files/blob/master/<span class="hljs-class"><span class="hljs-keyword">lib</span>/<span class="hljs-title">index</span>.<span class="hljs-title">min</span>.<span class="hljs-title">js</span>放入自己公司<span class="hljs-title">cdn</span>或者嵌入模板<span class="hljs-title">html</span>中</span>
+LSCacheFiles.init()</code></pre><p><strong>运行成功的存储结果</strong></p>
+			<p>localSotrage中</p>
+			<table>
+				<thead>
+					<tr>
+						<th>key</th>
+						<th>value </th>
+					</tr>
+				</thead>
+				<tbody><tr>
+						<td><strong>LS</strong>version</td>
+						<td>1</td>
+					</tr>
+					<tr>
+						<td><strong>LS</strong><a href="https://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css">https://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css</a></td>
+						<td>对应css</td>
+					</tr>
+					<tr>
+						<td><strong>LS</strong><a href="https://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css_version">https://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css_version</a></td>
+						<td>1</td>
+					</tr>
+					<tr>
+						<td><strong>LS</strong><a href="http://j1.58cdn.com.cn/global_app/js/lib/zepto.min.js">http://j1.58cdn.com.cn/global_app/js/lib/zepto.min.js</a></td>
+						<td>对应js</td>
+					</tr>
+					<tr>
+						<td><strong>LS</strong><a href="http://j1.58cdn.com.cn/global_app/js/lib/zepto.min.js_version">http://j1.58cdn.com.cn/global_app/js/lib/zepto.min.js_version</a></td>
+						<td>1</td>
+					</tr>
+			</tbody></table>
+			<p>html中</p>
+			<pre><code><span class="hljs-tag">&lt;<span class="hljs-name">style</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/css"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"__LS__main.chunk_v20190830183911.css"</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/css"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"__LS__zepto.min.js"</span>&gt;</span><span class="handlebars"><span class="xml">...<span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span></span></span></code></pre><h3 id="lscachefiles-api">LSCacheFiles API</h3>
+			<pre><code>需要先配置window.<span class="hljs-strong">__LS__</span>MAP文件，或者将<span class="hljs-strong">__LS__</span>MAP挂载到LSCacheFiles上面</code></pre><h3 id="lscachefiles-lsmap">LSCacheFiles.<strong>LS</strong>MAP</h3>
+			<pre><code>可挂载配置文件,默认会读取全局配置文件 <span class="hljs-strong">*window.__LS__MAP*</span></code></pre><h3 id="lscachefiles-init-options-configmap-lsconfig-needfullupdate-boolean-">LSCacheFiles.init(options:{configMap:LSConfig,needFullUpdate:boolean})</h3>
+			<pre><code>根据<span class="hljs-strong">__LS__</span>MAP配置初始化缓存操作</code></pre><ol>
+				<li>configMap 配置文件，自动读取window.<strong>LS</strong>MAP 也可选择覆盖</li>
+				<li><p>needFullUpdate 是否全量更新缓存文件</p>
+					<h3 id="lscachefiles-checkandcachefile-url-version-">LSCacheFiles.checkAndCacheFile(url,version)</h3>
+					<p> 请求url并缓存到本地，并且缓存当前版本</p>
+				</li>
+			</ol>
+			<p>单独调用也会判断</p>
+			<ol>
+				<li>本地是否有存该文件</li>
+				<li>版本与version是否相同
+				当本地没有存该文件，或者有存该文件但是version不同时会请求数据并缓存版本</li>
+			</ol>
+			<pre><code><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">LSCacheFiles</span>.</span></span>check<span class="hljs-constructor">AndCacheFile('<span class="hljs-params">https</span>:<span class="hljs-operator">/</span><span class="hljs-operator">/</span><span class="hljs-params">c</span>.58cdn.<span class="hljs-params">com</span>.<span class="hljs-params">cn</span><span class="hljs-operator">/</span><span class="hljs-params">git</span><span class="hljs-operator">/</span><span class="hljs-params">hrg</span>-<span class="hljs-params">innovate</span><span class="hljs-operator">/</span><span class="hljs-params">m</span>-<span class="hljs-params">super</span>-<span class="hljs-params">employer</span><span class="hljs-operator">/</span><span class="hljs-params">static</span><span class="hljs-operator">/</span><span class="hljs-params">css</span><span class="hljs-operator">/</span><span class="hljs-params">main</span>.<span class="hljs-params">chunk_v20190830183911</span>.<span class="hljs-params">css</span>',1)</span>
+</code></pre><p>存储表现为</p>
+			<table>
+				<thead>
+					<tr>
+						<th>key</th>
+						<th>value </th>
+					</tr>
+				</thead>
+				<tbody><tr>
+						<td><strong>LS</strong><a href="https://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css">https://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css</a></td>
+						<td>对应css</td>
+					</tr>
+					<tr>
+						<td><strong>LS</strong><a href="https://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css_version">https://c.58cdn.com.cn/git/hrg-innovate/m-super-employer/static/css/main.chunk_v20190830183911.css_version</a></td>
+						<td>1</td>
+					</tr>
+			</tbody></table>
+			<h3 id="lscachefiles-loadandcachefile-url-version-">LSCacheFiles.loadAndCacheFile(url,version)</h3>
+			<p>类似checkFileAndCache功能，但是检查本地是否有改文件和版本。每次都会重新请求并缓存文件。so...没啥用</p>
+			<h3 id="lscachefiles-needfullupdate">LSCacheFiles.needFullUpdate</h3>
+			<p>LSCacheFiles.needFullUpdate 自动根据配置文件<strong>LS</strong>MAP的version字段和localstorage字段判断是否需要全部更新缓存文件,
+			也可传入needFullUpdate 手动配置是否需要触发全量更新</p>
+			<h3 id="lscachefiles-checkcanlocalstorage-">LSCacheFiles.checkCanLocalStorage()</h3>
+			<p>判断本地存储是否可用，可以根据此字段判断是否手动开启缓存</p>
+			<h3 id="lscachefiles-checkusedspace-">LSCacheFiles.checkUsedSpace()</h3>
+			<p>本地localstorage剩余存储空间，可根据此字段决定是否开启缓存</p>
+			<h3 id="-">注意</h3>
+			<ol>
+				<li>不适合太大文件的存储，低版本浏览器单个localStoragekey存储能力有限</li>
+				<li>支持typescript声明文件</li>
+			</ol>
+		</div>
 		<section class="tsd-panel-group tsd-index-group">
 			<h2>Index</h2>
 			<section class="tsd-panel tsd-index-panel">
@@ -989,9 +1114,15 @@ img { max-width: 100%; }
 				<div class="tsd-signature tsd-kind-icon">is<wbr>Array<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> =&nbsp;isType(&#x27;Array&#x27;)</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in helper.ts:19</li>
+						<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L23">helper.ts:23</a></li>
 					</ul>
 				</aside>
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>useage
+						const flag = isType(&#39;Array&#39;)([])</p>
+					</div>
+				</div>
 			</section>
 		</section>
 		<section class="tsd-panel-group tsd-member-group tsd-is-not-exported">
@@ -1006,7 +1137,7 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in helper.ts:21</li>
+								<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L25">helper.ts:25</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1034,7 +1165,7 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in helper.ts:13</li>
+								<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L13">helper.ts:13</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1057,7 +1188,7 @@ img { max-width: 100%; }
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in helper.ts:1</li>
+								<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L1">helper.ts:1</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -1073,7 +1204,7 @@ img { max-width: 100%; }
 				<div class="tsd-signature tsd-kind-icon">dom<wbr>Utils<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in helper.ts:41</li>
+						<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L45">helper.ts:45</a></li>
 					</ul>
 				</aside>
 				<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-object-literal tsd-is-not-exported">
@@ -1082,7 +1213,7 @@ img { max-width: 100%; }
 					<div class="tsd-signature tsd-kind-icon">PREFIX<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> =&nbsp;&quot;__LS__&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in helper.ts:42</li>
+							<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L46">helper.ts:46</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -1096,7 +1227,7 @@ img { max-width: 100%; }
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in helper.ts:49</li>
+									<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L53">helper.ts:53</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1129,7 +1260,7 @@ img { max-width: 100%; }
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in helper.ts:75</li>
+									<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L79">helper.ts:79</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1164,7 +1295,7 @@ img { max-width: 100%; }
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in helper.ts:100</li>
+									<li>Defined in <a href="https://github.com/501981732/ls-cache-files-ts/blob/d7eb6fd/src/helper.ts#L104">helper.ts:104</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
